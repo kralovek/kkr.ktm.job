@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/aop 
+    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd
+    "
+    default-init-method="config"
+>
+    <import resource="spring-main-ktm.xml" />
+
+    <bean id="batchKtmFile2Base" class="kkr.ktm.domains.orchestrator.components.batchktm.BatchKtm">
+        <property name="testLoader" ref="testLoaderExcel" />
+        <property name="testReporter" ref="testReporterExcel" />
+        <property name="testLancer" ref="testLancerJobFile2Base" />
+        <property name="trafficLights" ref="trafficLights" />
+        <property name="sysPrefix" value="KTM" />
+    </bean>
+
+    <bean id="testLancerJobFile2Base" class="kkr.job.file2base.domains.test.components.testlancer.job.file2base.TestLancerJobFile2Base">
+    </bean>
+
+
+</beans>
