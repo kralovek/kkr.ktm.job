@@ -19,7 +19,7 @@ import kkr.common.errors.FileException;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInput;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInputException;
 
-public class IterableInputCSVFile extends IterableInputCSVFileFwk implements IterableInput {
+public class IterableInputCSVFile extends IterableInputCSVFileFwk implements IterableInput<String> {
 	private static Log LOGGER = LogFactory.getLog(IterableInputCSVFile.class);
 
 	private LineNumberReader reader;
@@ -173,7 +173,7 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 		}
 	}
 
-	public Map<String, Object> readNext() throws BaseException {
+	public Map<String, String> readNext() throws BaseException {
 		try {
 			LOGGER.trace("BEGIN");
 			testConfigured();
@@ -189,7 +189,7 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 			// Work current line
 			//
 			String[] valuesArray = splitCsvLine(currentLine, COLUMN_SEPARATOR);
-			Map<String, Object> valuesMap = new TreeMap<String, Object>(filedComparator);
+			Map<String, String> valuesMap = new TreeMap<String, String>(filedComparator);
 			int length = valuesArray.length > headerArray.length ? valuesArray.length : headerArray.length;
 			for (int i = 0; i < length; i++) {
 				if (i < headerArray.length && i < valuesArray.length) {

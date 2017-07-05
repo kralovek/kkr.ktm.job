@@ -16,7 +16,7 @@ public abstract class BatchJobFile2BaseFwk {
 	protected File dirInput;
 	protected File dirOutput;
 	protected File dirError;
-	protected IterableInputFactory iterableInputFactory;
+	protected IterableInputFactory<String> iterableInputFactory;
 	protected Validator validator;
 	protected DataSource dataSource;
 
@@ -97,11 +97,11 @@ public abstract class BatchJobFile2BaseFwk {
 		this.dirError = dirError;
 	}
 
-	public IterableInputFactory getIterableInputFactory() {
+	public IterableInputFactory<String> getIterableInputFactory() {
 		return iterableInputFactory;
 	}
 
-	public void setIterableInputFactory(IterableInputFactory iterableInputFactory) {
+	public void setIterableInputFactory(IterableInputFactory<String> iterableInputFactory) {
 		this.iterableInputFactory = iterableInputFactory;
 	}
 

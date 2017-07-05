@@ -4,7 +4,7 @@ import java.util.Map;
 
 import kkr.common.errors.BaseException;
 
-public interface IterableInput {
+public interface IterableInput<T> {
 
 	String getSource();
 
@@ -14,7 +14,7 @@ public interface IterableInput {
 
 	boolean isOpened();
 
-	Map<String, Object> readNext() throws BaseException;
+	Map<String, T> readNext() throws BaseException;
 
 	boolean hasNext() throws BaseException;
 }

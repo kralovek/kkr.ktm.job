@@ -14,12 +14,12 @@ public abstract class ValidatorItemPatternFwk extends ValidatorBase {
 	public void config() throws ConfigurationException {
 		configured = false;
 		if (_pattern == null) {
-			throw new ConfigurationException("Parameter 'pattern' is not configured");
+			throw new ConfigurationException("Parameter '_pattern' is not configured");
 		} else {
 			try {
 				pattern = Pattern.compile(_pattern);
 			} catch (Exception ex) {
-				throw new ConfigurationException("Parameter 'pattern' has bad value: " + _pattern);
+				throw new ConfigurationException("Parameter '_pattern' has bad value: " + _pattern);
 			}
 		}
 

@@ -5,10 +5,10 @@ import java.io.File;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import kkr.job.file2base.domains.common.components.iterableinput.IterableInputFactory;
 import kkr.common.errors.BaseException;
+import kkr.job.file2base.domains.common.components.iterableinput.IterableInputFactory;
 
-public class IterableInputFactoryCSVFile extends IterableInputFactoryCSVFileFwk implements IterableInputFactory {
+public class IterableInputFactoryCSVFile extends IterableInputFactoryCSVFileFwk implements IterableInputFactory<String> {
 	private static Log LOGGER = LogFactory.getLog(IterableInputFactoryCSVFile.class);
 
 	public IterableInputCSVFile createInstance(String source) throws BaseException {

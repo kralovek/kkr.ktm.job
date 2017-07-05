@@ -18,13 +18,13 @@ public abstract class ValidatorItemDateFwk extends ValidatorBase {
 		super.config();
 
 		if (_pattern == null) {
-			throw new ConfigurationException("Parameter 'pattern' is not configured");
+			throw new ConfigurationException("Parameter '_pattern' is not configured");
 		} else {
 			try {
 				pattern = new SimpleDateFormat(_pattern);
 				pattern.format(new Date());
 			} catch (Exception ex) {
-				throw new ConfigurationException("Parameter 'pattern' has bad value: " + _pattern);
+				throw new ConfigurationException("Parameter '_pattern' has bad value: " + _pattern);
 			}
 		}
 

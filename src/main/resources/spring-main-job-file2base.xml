@@ -13,9 +13,9 @@
 >
 
     <bean id="batchJobFile2Base" class="kkr.job.file2base.batchs.file2base.BatchJobFile2Base">
-        <property name="dirInput" value="input" />
-        <property name="dirOutput" value="output" />
-        <property name="dirError" value="error" />
+        <property name="dirInput" value="job/input" />
+        <property name="dirOutput" value="job/output" />
+        <property name="dirError" value="job/error" />
         <property name="iterableInputFactory" ref="iterableInputFactoryCsv" />
         <property name="validator" ref="validator" />
         <property name="dataSource" ref="dataSource" />

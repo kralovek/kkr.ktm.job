@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -80,7 +79,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 	private void workFile(String batchId, Connection connection, File file) throws BaseException {
 		LOG.trace("BEGIN: " + file.getAbsolutePath());
 		try {
-			IterableInput iterableInput = iterableInputFactory.createInstance(file.getAbsolutePath());
+			IterableInput<String> iterableInput = iterableInputFactory.createInstance(file.getAbsolutePath());
 
 			int iLine = 0;
 			int iLineKo = 0;
@@ -89,9 +88,8 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				iterableInput.open();
 
 				for (iLine = 0; iterableInput.hasNext(); iLine++) {
-					Map<String, Object> data = iterableInput.readNext();
-					Map<String, String> dataString = transformData(data);
-					if (!workLine(batchId, connection, file, iLine, dataString)) {
+					Map<String, String> data = iterableInput.readNext();
+					if (!workLine(batchId, connection, file, iLine, data)) {
 						iLineKo++;
 					}
 				}
@@ -111,18 +109,6 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 		} finally {
 			LOG.trace("END: " + file.getAbsolutePath());
 		}
-	}
-
-	private Map<String, String> transformData(Map<String, Object> data) {
-		Map<String, String> retval = new LinkedHashMap<String, String>();
-		for (Map.Entry<String, Object> entry : data.entrySet()) {
-			if (entry.getValue() == null || entry.getValue() instanceof String) {
-				retval.put(entry.getKey(), (String) entry.getValue());
-			} else {
-				throw new IllegalStateException("Expecting type String but receved: " + entry.getValue().getClass().getName());
-			}
-		}
-		return retval;
 	}
 
 	private boolean workLine(String batchId, Connection connection, File file, int iLine, Map<String, String> data) throws BaseException {
@@ -175,8 +161,8 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				throw new IllegalStateException("Unexpected data conversion problem", ex);
 			}
 
-			String query = "INSERT INTO TABLE_DATA (\"BATCH_ID\", \"DATE\", \"" + COLUMN_INTEGER + "\", \"" + COLUMN_STRING + "\", \"" + COLUMN_DOUBLE
-					+ "\", \"" + COLUMN_DATE + "\") VALUES (?, ?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_DATA (\"ID\", \"BATCH_ID\", \"DATE\", \"" + COLUMN_INTEGER + "\", \"" + COLUMN_STRING + "\", \""
+					+ COLUMN_DOUBLE + "\", \"" + COLUMN_DATE + "\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -277,7 +263,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 	private void reportLineError(String batchId, Connection connection, File file, int iLine, String reason) throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_ERROR (\"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"REASON\") VALUES (?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"REASON\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -322,7 +308,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 			throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_ERROR (\"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"ITEM\", \"VALUE\", \"REASON\") VALUES (?, ?, ?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"ITEM\", \"VALUE\", \"REASON\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -370,7 +356,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 	private void reportFileResult(String batchId, Connection connection, File file, int countLines, int countLinesError) throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_FILE (\"BATCH_ID\", \"DATE\", \"FILE\", \"COUNT_LINES\", \"COUNT_LINES_ERROR\") VALUES (?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_FILE (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"COUNT_LINES\", \"COUNT_LINES_ERROR\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;

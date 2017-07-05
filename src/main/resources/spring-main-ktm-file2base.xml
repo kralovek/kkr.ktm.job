@@ -12,6 +12,7 @@
     default-init-method="config"
 >
     <import resource="spring-main-ktm.xml" />
+    <import resource="spring-main-file2base.xml" />
 
     <bean id="batchKtmFile2Base" class="kkr.ktm.domains.orchestrator.components.batchktm.BatchKtm">
         <property name="testLoader" ref="testLoaderExcel" />
@@ -22,7 +23,49 @@
     </bean>
 
     <bean id="testLancerJobFile2Base" class="kkr.job.file2base.domains.test.components.testlancer.job.file2base.TestLancerJobFile2Base">
+        <property name="batchJobFile2Base" ref="batchJobFile2Base" />
     </bean>
 
+    <bean id="diffManagerFs" class="kkr.ktm.domains.common.components.diffmanager.filesystem.local.DiffManagerFilesystem">
+        <property name="name" value="FS" />
+        <property name="dirInfos">
+            <list>
+                <bean class="kkr.ktm.domains.common.components.diffmanager.filesystem.DirInfo">
+                    <property name="name" value="INPUT" />
+                    <property name="path" value="job/input" />
+                    <property name="content" value="true" />
+                </bean>
+                <bean class="kkr.ktm.domains.common.components.diffmanager.filesystem.DirInfo">
+                    <property name="name" value="OUTPUT" />
+                    <property name="path" value="job/input" />
+                    <property name="content" value="true" />
+                </bean>
+                <bean class="kkr.ktm.domains.common.components.diffmanager.filesystem.DirInfo">
+                    <property name="name" value="ERROR" />
+                    <property name="path" value="job/input" />
+                    <property name="content" value="true" />
+                </bean>
+            </list>
+        </property>
+    </bean>
 
+    <bean id="diffManagerDb" class="kkr.ktm.domains.common.components.diffmanager.databasetrigger.DiffManagerDatabaseTrigger">
+        <property name="name" value="DB" />
+        <property name="dateFormat" value="HH:mm:ss dd/MM/yyyy" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="tableInfos">
+            <list>
+                <bean class="kkr.ktm.domains.common.components.diffmanager.databasetrigger.TableInfo" parent="tableInfoTrigger">
+                    <property name="name" value="TABLE_DATA" />
+                    <property name="ktmNamePrefix" value="KTM_" />
+                    <property name="joinStatus" value="true" />
+                    <property name="columnsPK">
+                        <list>
+                            <value>ID</value>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
 </beans>
