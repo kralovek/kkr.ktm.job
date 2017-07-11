@@ -94,7 +94,7 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 					ex.setLine(reader.getLineNumber());
 					throw ex;
 				}
-				headerArray = headerLine.split(String.valueOf(COLUMN_SEPARATOR));
+				headerArray = headerLine.split(String.valueOf(SYMBOL_SEPARATOR));
 				headerOrder = new HashMap<String, Integer>();
 				for (int i = 0; i < headerArray.length; i++) {
 					String trimedField = headerArray[i].trim();
@@ -112,7 +112,11 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 			line = null;
 			try {
 				while ((line = reader.readLine()) != null) {
-					if (line.trim().isEmpty()) {
+					line = line.trim();
+					if (line.startsWith(String.valueOf(SYMBOL_COMMENT))) {
+						continue;
+					}
+					if (line.isEmpty()) {
 						continue;
 					} else {
 						currentLine = line;
@@ -123,6 +127,7 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 				throw new FileException(file, "Impossible de lire le fichier: " + file.getAbsolutePath(), ex);
 			}
 			filedComparator = new FieldComparator(headerOrder);
+			LOGGER.trace("OK");
 		} catch (IterableInputException ex) {
 			close();
 			throw ex;
@@ -188,7 +193,7 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 			//
 			// Work current line
 			//
-			String[] valuesArray = splitCsvLine(currentLine, COLUMN_SEPARATOR);
+			String[] valuesArray = splitCsvLine(currentLine, SYMBOL_SEPARATOR);
 			Map<String, String> valuesMap = new TreeMap<String, String>(filedComparator);
 			int length = valuesArray.length > headerArray.length ? valuesArray.length : headerArray.length;
 			for (int i = 0; i < length; i++) {
@@ -206,7 +211,11 @@ public class IterableInputCSVFile extends IterableInputCSVFileFwk implements Ite
 			//
 			try {
 				while ((currentLine = reader.readLine()) != null) {
-					if (currentLine.trim().isEmpty()) {
+					currentLine = currentLine.trim();
+					if (currentLine.startsWith(String.valueOf(SYMBOL_COMMENT))) {
+						continue;
+					}
+					if (currentLine.isEmpty()) {
 						continue;
 					} else {
 						break;

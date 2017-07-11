@@ -1,12 +1,13 @@
 package kkr.job.file2base.batchs.file2base;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.FileFilter;
+import java.util.regex.Pattern;
 
 import kkr.common.components.datasource.DataSource;
 import kkr.common.errors.ConfigurationException;
+import kkr.common.utils.UtilsConfig;
+import kkr.job.file2base.domains.business.transformator.Transformator;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInputFactory;
 import kkr.job.file2base.domains.common.components.validator.Validator;
 
@@ -19,9 +20,23 @@ public abstract class BatchJobFile2BaseFwk {
 	protected IterableInputFactory<String> iterableInputFactory;
 	protected Validator validator;
 	protected DataSource dataSource;
+	protected Transformator transformator;
 
-	protected String _dateFormat;
-	protected DateFormat dateFormat;
+	protected String _pattern;
+	protected FileFilter fileFilter;
+
+	private static class FileFilterPattern implements FileFilter {
+		private Pattern pattern;
+		public FileFilterPattern(Pattern pattern) {
+			this.pattern = pattern;
+		}
+		public boolean accept(File file) {
+			if (!file.isFile()) {
+				return false;
+			}
+			return (pattern.matcher(file.getName()).matches());
+		}
+	};
 
 	public void config() throws ConfigurationException {
 		configured = false;
@@ -45,15 +60,14 @@ public abstract class BatchJobFile2BaseFwk {
 			throw new ConfigurationException("Parameter 'dataSource' is not configured");
 		}
 
-		if (_dateFormat == null) {
-			throw new ConfigurationException("Parameter 'dateFormat' is not configured");
+		if (transformator == null) {
+			throw new ConfigurationException("Parameter 'transformator' is not configured");
+		}
+		if (_pattern == null) {
+			throw new ConfigurationException("Parameter 'pattern' is not configured");
 		} else {
-			try {
-				dateFormat = new SimpleDateFormat(_dateFormat);
-				dateFormat.format(new Date());
-			} catch (Exception ex) {
-				throw new ConfigurationException("Parameter 'dateFormat' has bad value: " + _dateFormat);
-			}
+			Pattern pattern = UtilsConfig.checkPattern(_pattern, "pattern");
+			fileFilter = new FileFilterPattern(pattern);
 		}
 
 		configured = true;
@@ -63,14 +77,6 @@ public abstract class BatchJobFile2BaseFwk {
 		if (!configured) {
 			throw new IllegalStateException(this.getClass().getName() + ": The component is not configured");
 		}
-	}
-
-	public String getDateFormat() {
-		return _dateFormat;
-	}
-
-	public void setDateFormat(String dateFormat) {
-		this._dateFormat = dateFormat;
 	}
 
 	public File getDirInput() {
@@ -119,5 +125,21 @@ public abstract class BatchJobFile2BaseFwk {
 
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+
+	public Transformator getTransformator() {
+		return transformator;
+	}
+
+	public void setTransformator(Transformator transformator) {
+		this.transformator = transformator;
+	}
+
+	public String getPattern() {
+		return _pattern;
+	}
+
+	public void setPattern(String pattern) {
+		this._pattern = pattern;
 	}
 }

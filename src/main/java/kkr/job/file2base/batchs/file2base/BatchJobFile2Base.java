@@ -1,12 +1,9 @@
 package kkr.job.file2base.batchs.file2base;
 import java.io.File;
-import java.io.FileFilter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,25 +24,13 @@ import kkr.job.file2base.domains.common.components.iterableinput.IterableInput;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInputException;
 import kkr.job.file2base.domains.common.components.validator.ValidatorItemError;
 import kkr.job.file2base.domains.common.components.validator.ValidatorResult;
+import kkr.job.file2base.errors.MissingDependencyException;
+import kkr.job.file2base.errors.NotUniqueException;
 
 public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 	private static final Logger LOG = Logger.getLogger(BatchJobFile2Base.class);
 
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd-HHmmss");
-
-	private static final String COLUMN_STRING = "COLUMN_STRING";
-	private static final String COLUMN_INTEGER = "COLUMN_INTEGER";
-	private static final String COLUMN_DOUBLE = "COLUMN_DOUBLE";
-	private static final String COLUMN_DATE = "COLUMN_DATE";
-
-	private static final FileFilter FILE_FILTER = new FileFilter() {
-		public boolean accept(File file) {
-			if (!file.isFile()) {
-				return false;
-			}
-			return file.getName().toLowerCase().endsWith(".csv");
-		}
-	};
 
 	public void run() throws BaseException {
 		LOG.trace("BEGIN");
@@ -119,18 +104,14 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 			boolean retval = validatorResult.getErrors().isEmpty();
 
 			if (retval) {
-				Integer itemInteger = null;
 				try {
-					itemInteger = Integer.parseInt(data.get(COLUMN_INTEGER));
-				} catch (Exception ex) {
-					throw new IllegalStateException("Unexpected data conversion problem", ex);
-				}
-
-				if (checkUnicity(connection, itemInteger)) {
-					writeData(batchId, connection, data);
-				} else {
+					transformator.writeData(batchId, dataSource, connection, data);
+				} catch (NotUniqueException ex) {
 					retval = false;
-					reportLineError(batchId, connection, file, iLine, COLUMN_INTEGER + " is not unique: " + itemInteger);
+					reportLineError(batchId, connection, file, iLine, ex.getMessage());
+				} catch (MissingDependencyException ex) {
+					retval = false;
+					reportLineError(batchId, connection, file, iLine, ex.getMessage());
 				}
 			} else {
 				for (Map.Entry<String, ValidatorItemError> entry : validatorResult.getErrors().entrySet()) {
@@ -144,126 +125,10 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 		}
 	}
 
-	private void writeData(String batchId, Connection connection, Map<String, String> data) throws BaseException {
-		LOG.trace("BEGIN");
-		try {
-			Integer itemInteger = null;
-			String itemString = null;
-			Double itemDouble = null;
-			Date itemDate = null;
-
-			try {
-				itemInteger = Integer.parseInt(data.get(COLUMN_INTEGER));
-				itemString = data.get(COLUMN_STRING);
-				itemDouble = Double.parseDouble(data.get(COLUMN_DOUBLE));
-				itemDate = dateFormat.parse(data.get(COLUMN_DATE));
-			} catch (Exception ex) {
-				throw new IllegalStateException("Unexpected data conversion problem", ex);
-			}
-
-			String query = "INSERT INTO TABLE_DATA (\"ID\", \"BATCH_ID\", \"DATE\", \"" + COLUMN_INTEGER + "\", \"" + COLUMN_STRING + "\", \""
-					+ COLUMN_DOUBLE + "\", \"" + COLUMN_DATE + "\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?, ?)";
-			String queryLog = query;
-
-			PreparedStatement preparedStatement = null;
-			try {
-				preparedStatement = connection.prepareStatement(query);
-
-				Date date = new Date();
-				int iItem = 0;
-
-				preparedStatement.setString(++iItem, batchId);
-				preparedStatement.setTimestamp(++iItem, new Timestamp(date.getTime()));
-				preparedStatement.setInt(++iItem, itemInteger);
-				if (itemString != null) {
-					preparedStatement.setString(++iItem, itemString);
-				} else {
-					preparedStatement.setNull(++iItem, Types.VARCHAR);
-				}
-				if (itemDouble != null) {
-					preparedStatement.setDouble(++iItem, itemDouble);
-				} else {
-					preparedStatement.setNull(++iItem, Types.DOUBLE);
-				}
-				if (itemDate != null) {
-					preparedStatement.setTimestamp(++iItem, new Timestamp(itemDate.getTime()));
-				} else {
-					preparedStatement.setNull(++iItem, Types.TIMESTAMP);
-				}
-
-				queryLog = UtilsDatabase.adaptQueryForLog(query, // 
-						batchId, //
-						date, //
-						itemInteger, //
-						itemString, //
-						itemDouble, //
-						itemDate);
-
-				LOG.info("QUERY: " + queryLog);
-
-				int affectedLines = preparedStatement.executeUpdate();
-
-				LOG.debug("Inserted lines: " + affectedLines);
-
-				preparedStatement.close();
-				preparedStatement = null;
-			} catch (SQLException ex) {
-				throw new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
-			} finally {
-				UtilsResource.closeResource(preparedStatement);
-			}
-			LOG.trace("OK");
-		} finally {
-			LOG.trace("END");
-		}
-	}
-
-	private boolean checkUnicity(Connection connection, int id) throws BaseException {
-		LOG.trace("BEGIN");
-		try {
-			boolean retval;
-			String query = "SELECT COUNT(*) FROM TABLE_DATA WHERE \"" + COLUMN_INTEGER + "\" = ?";
-			String queryLog = query;
-
-			PreparedStatement preparedStatement = null;
-			ResultSet resultSet = null;
-			try {
-				preparedStatement = connection.prepareStatement(query);
-
-				int iItem = 0;
-				preparedStatement.setInt(++iItem, id);
-
-				queryLog = UtilsDatabase.adaptQueryForLog(query, id);
-
-				LOG.info("QUERY: " + queryLog);
-
-				resultSet = preparedStatement.executeQuery();
-				resultSet.next();
-				int count = resultSet.getInt(1);
-				retval = count == 0;
-
-				resultSet.close();
-				resultSet = null;
-
-				preparedStatement.close();
-				preparedStatement = null;
-			} catch (SQLException ex) {
-				throw new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
-			} finally {
-				UtilsResource.closeResource(resultSet);
-				UtilsResource.closeResource(preparedStatement);
-			}
-			LOG.trace("OK");
-			return retval;
-		} finally {
-			LOG.trace("END");
-		}
-	}
-
 	private void reportLineError(String batchId, Connection connection, File file, int iLine, String reason) throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"REASON\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"REASON\") VALUES (SEQ_ERROR.NEXTVAL, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -285,7 +150,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 						iLine, //
 						reason);
 
-				LOG.info("QUERY: " + queryLog);
+				LOG.debug("QUERY: " + queryLog);
 
 				int affectedLines = preparedStatement.executeUpdate();
 
@@ -294,7 +159,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				preparedStatement.close();
 				preparedStatement = null;
 			} catch (SQLException ex) {
-				new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
+				throw new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
 			} finally {
 				UtilsResource.closeResource(preparedStatement);
 			}
@@ -308,7 +173,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 			throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"ITEM\", \"VALUE\", \"REASON\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_ERROR (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"LINE\", \"ITEM\", \"VALUE\", \"REASON\") VALUES (SEQ_ERROR.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -334,7 +199,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 						value, //
 						reason);
 
-				LOG.info("QUERY: " + queryLog);
+				LOG.debug("QUERY: " + queryLog);
 
 				int affectedLines = preparedStatement.executeUpdate();
 
@@ -343,7 +208,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				preparedStatement.close();
 				preparedStatement = null;
 			} catch (SQLException ex) {
-				new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
+				throw new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
 			} finally {
 				UtilsResource.closeResource(preparedStatement);
 			}
@@ -356,7 +221,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 	private void reportFileResult(String batchId, Connection connection, File file, int countLines, int countLinesError) throws BaseException {
 		LOG.trace("BEGIN");
 		try {
-			String query = "INSERT INTO TABLE_FILE (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"COUNT_LINES\", \"COUNT_LINES_ERROR\") VALUES (SEQ_DATA.NEXTVAL, ?, ?, ?, ?, ?)";
+			String query = "INSERT INTO TABLE_FILE (\"ID\", \"BATCH_ID\", \"DATE\", \"FILE\", \"COUNT_LINES\", \"COUNT_LINES_ERROR\") VALUES (SEQ_FILE.NEXTVAL, ?, ?, ?, ?, ?)";
 			String queryLog = query;
 
 			PreparedStatement preparedStatement = null;
@@ -378,7 +243,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 						countLines, //
 						countLinesError);
 
-				LOG.info("QUERY: " + queryLog);
+				LOG.debug("QUERY: " + queryLog);
 
 				int affectedLines = preparedStatement.executeUpdate();
 
@@ -387,7 +252,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				preparedStatement.close();
 				preparedStatement = null;
 			} catch (SQLException ex) {
-				new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
+				throw new DatabaseQueryException(dataSource, queryLog, "Cannot insert line to error table", ex);
 			} finally {
 				UtilsResource.closeResource(preparedStatement);
 			}
@@ -403,10 +268,10 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 			File fileTarget;
 
 			if (ok) {
-				LOG.info("Moving file to Output directory: " + file.getName());
+				LOG.debug("Moving file to Output directory: " + file.getName());
 				fileTarget = new File(dirOutput, batchId + ".OK." + file.getName());
 			} else {
-				LOG.info("Moving file to Error directory: " + file.getName());
+				LOG.debug("Moving file to Error directory: " + file.getName());
 				fileTarget = new File(dirError, batchId + ".ERROR." + file.getName());
 			}
 
@@ -427,7 +292,7 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				throw new FunctionalException("Directory does not exist: " + dirInput.getAbsolutePath());
 			}
 
-			File[] files = dirInput.listFiles(FILE_FILTER);
+			File[] files = dirInput.listFiles(fileFilter);
 
 			if (files == null) {
 				throw new TechnicalException("Cannot access the directory: " + dirInput.getAbsolutePath());

@@ -8,7 +8,8 @@ import java.util.Map;
 import kkr.common.errors.ConfigurationException;
 
 public abstract class IterableInputCSVFileFwk {
-	protected static final char COLUMN_SEPARATOR = ';';
+	protected static final char SYMBOL_SEPARATOR = ';';
+	protected static final char SYMBOL_COMMENT = '#';
 
 	private boolean configured;
 

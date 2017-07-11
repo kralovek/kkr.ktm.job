@@ -13,4 +13,8 @@ public class ValidatorResult {
 	public Map<String, ValidatorItemError> getErrors() {
 		return errors;
 	}
+
+	public String toString() {
+		return "[ERRORS: " + errors.size() + "]";
+	}
 }

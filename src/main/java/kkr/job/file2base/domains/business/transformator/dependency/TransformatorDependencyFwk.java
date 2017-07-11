@@ -1,9 +1,9 @@
-package kkr.job.file2base.domains.common.components.validatoritem.mandatory;
+package kkr.job.file2base.domains.business.transformator.dependency;
 
 import kkr.common.errors.ConfigurationException;
-import kkr.job.file2base.domains.common.components.validatoritem.base.ValidatorBase;
+import kkr.job.file2base.domains.business.transformator.base.TransformatorBase;
 
-public abstract class ValidatorMandatoryFwk extends ValidatorBase {
+public abstract class TransformatorDependencyFwk extends TransformatorBase {
 	private boolean configured;
 
 	public void config() throws ConfigurationException {

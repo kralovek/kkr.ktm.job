@@ -11,69 +11,19 @@
     "
     default-init-method="config"
 >
+    <import resource="spring-inc-database.xml" />
+    <import resource="spring-inc-job-file2base-data.xml" />
+    <import resource="spring-inc-job-file2base-dependency.xml" />
 
-    <bean id="batchJobFile2Base" class="kkr.job.file2base.batchs.file2base.BatchJobFile2Base">
+    <bean abstract="true" id="batchJobFile2Base" class="kkr.job.file2base.batchs.file2base.BatchJobFile2Base">
         <property name="dirInput" value="job/input" />
         <property name="dirOutput" value="job/output" />
         <property name="dirError" value="job/error" />
         <property name="iterableInputFactory" ref="iterableInputFactoryCsv" />
-        <property name="validator" ref="validator" />
         <property name="dataSource" ref="dataSource" />
-        <property name="dateFormat" value="HH:mm:ss dd/MM/yyyy" />
     </bean>
 
     <bean id="iterableInputFactoryCsv" class="kkr.job.file2base.domains.common.components.iterableinput.csv.IterableInputFactoryCSVFile">
         <property name="hasHeader" value="true" />
     </bean>
-
-    <bean id="validator" class="kkr.job.file2base.domains.common.components.validator.generic.ValidatorGeneric">
-        <property name="validatorItems">
-            <map>
-                <entry key="COLUMN_INTEGER">
-                    <list>
-                        <bean class="kkr.job.file2base.domains.common.components.validatoritem.mandatory.ValidatorMandatory" />
-                        <bean class="kkr.job.file2base.domains.common.components.validatoritem.pattern.ValidatorItemPattern">
-                            <property name="name" value="Integer" />
-                            <property name="pattern" value="([0-9]|[1-9][0-9]*)" />
-                        </bean>
-                    </list>
-                </entry>
-                <entry key="COLUMN_DOUBLE">
-                    <list>
-                        <bean class="kkr.job.file2base.domains.common.components.validatoritem.pattern.ValidatorItemPattern">
-                            <property name="name" value="Double" />
-                            <property name="pattern" value="([0-9]|[1-9][0-9]*)(\.[0-9]*)?" />
-                        </bean>
-                    </list>
-                </entry>
-                <entry key="COLUMN_STRING">
-                    <list>
-                        <bean class="kkr.job.file2base.domains.common.components.validatoritem.pattern.ValidatorItemPattern">
-                            <property name="name" value="Text max 20 characters" />
-                            <property name="pattern" value=".{0,20}" />
-                        </bean>
-                    </list>
-                </entry>
-                <entry key="COLUMN_DATE">
-                    <list>
-                        <bean class="kkr.job.file2base.domains.common.components.validatoritem.date.ValidatorItemDate">
-                            <property name="name" value="Date in format HH:mm:ss dd/MM/yyyy" />
-                            <property name="pattern" value="HH:mm:ss dd/MM/yyyy" />
-                        </bean>
-                    </list>
-                </entry>
-            </map>
-        </property>
-    </bean>
-
-    <bean id="dataSource" class="kkr.common.components.datasource.jdbc.DataSourceJdbc">
-        <property name="name" value="KKR" />
-        <property name="driver" value="oracle.jdbc.OracleDriver" />
-        <property name="schema" value="KKR" />
-        <property name="password" value="kkr" />
-        <property name="host" value="194.3.231.195" />
-        <property name="port" value="1521" />
-        <property name="instance" value="OINSDEV1" />
-    </bean>
-
 </beans>

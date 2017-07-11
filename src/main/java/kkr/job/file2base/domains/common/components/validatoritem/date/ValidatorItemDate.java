@@ -10,8 +10,9 @@ public class ValidatorItemDate extends ValidatorItemDateFwk implements Validator
 
 	public boolean validate(String value) throws BaseException {
 		try {
-			Date date = pattern.parse(value);
-			return true;
+			Date valueDate = pattern.parse(value);
+			String valueString = pattern.format(valueDate);
+			return value.equals(valueString);
 		} catch (ParseException e) {
 			return false;
 		}
