@@ -40,9 +40,7 @@ public abstract class IterableInputCSVFileFwk {
 
 	protected void config() throws ConfigurationException {
 		configured = false;
-		if (file == null) {
-			throw new ConfigurationException("Parameter 'file' is not configured");
-		}
+		configFile();
 		if (ignoredLines == null) {
 			ignoredLines = 0;
 		} else if (ignoredLines < 0) {
@@ -69,6 +67,12 @@ public abstract class IterableInputCSVFileFwk {
 			}
 		}
 		configured = true;
+	}
+
+	protected void configFile() throws ConfigurationException {
+		if (file == null) {
+			throw new ConfigurationException("Parameter 'file' is not configured");
+		}
 	}
 
 	public void testConfigured() {

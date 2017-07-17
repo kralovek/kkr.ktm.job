@@ -1,7 +1,5 @@
 package kkr.job.file2base.domains.common.components.iterableinput.csv;
 
-import java.io.File;
-
 import kkr.common.errors.ConfigurationException;
 
 public abstract class IterableInputFactoryCSVFileFwk extends IterableInputCSVFileFwk {
@@ -9,11 +7,12 @@ public abstract class IterableInputFactoryCSVFileFwk extends IterableInputCSVFil
 
 	public void config() throws ConfigurationException {
 		configured = false;
-		File orgFile = file;
-		file = new File("x");
 		super.config();
-		file = orgFile;
 		configured = true;
+	}
+
+	public void configFile() throws ConfigurationException {
+		// nothing to do
 	}
 
 	public void testConfigured() {
