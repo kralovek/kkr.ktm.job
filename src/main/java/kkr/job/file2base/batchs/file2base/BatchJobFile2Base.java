@@ -19,6 +19,7 @@ import kkr.common.errors.DatabaseQueryException;
 import kkr.common.errors.FunctionalException;
 import kkr.common.errors.TechnicalException;
 import kkr.common.utils.UtilsDatabase;
+import kkr.common.utils.UtilsFile;
 import kkr.common.utils.UtilsResource;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInput;
 import kkr.job.file2base.domains.common.components.iterableinput.IterableInputException;
@@ -274,6 +275,8 @@ public class BatchJobFile2Base extends BatchJobFile2BaseFwk {
 				LOG.debug("Moving file to Error directory: " + file.getName());
 				fileTarget = new File(dirError, batchId + ".ERROR." + file.getName());
 			}
+
+			UtilsFile.createFileDirectory(fileTarget);
 
 			if (!file.renameTo(fileTarget)) {
 				throw new TechnicalException("Cannot move file " + file.getAbsolutePath() + " to " + fileTarget.getAbsolutePath());
