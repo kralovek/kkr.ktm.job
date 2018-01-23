@@ -44,7 +44,7 @@
         <property name="dirInput" value="job/input" />
 
         <property name="templateLoader">
-            <bean class="kkr.ktm.common.components.templateloader.file.TemplateLoaderFile">
+            <bean class="kkr.ktm.domains.common.components.templateloader.file.TemplateLoaderFile">
                 <property name="dirs">
                     <value>ktm/template</value>
                 </property>
