@@ -4,9 +4,9 @@ import java.io.File;
 
 import kkr.common.errors.ConfigurationException;
 import kkr.job.file2base.batchs.file2base.BatchJobFile2Base;
-import kkr.ktm.common.components.templateloader.TemplateLoader;
 import kkr.ktm.domains.common.components.diffmanager.DiffManager;
 import kkr.ktm.domains.common.components.parametersformater.ParametersFormatter;
+import kkr.ktm.domains.common.components.templateloader.TemplateLoader;
 import kkr.ktm.utils.UtilsKtm;
 
 public abstract class TestLancerJobFile2BaseFwk {
