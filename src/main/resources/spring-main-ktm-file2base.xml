@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-    xsi:schemaLocation="
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
     http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/aop 
@@ -9,126 +10,138 @@
     http://www.springframework.org/schema/context
     http://www.springframework.org/schema/context/spring-context-3.0.xsd
     "
-    default-init-method="config"
->
-    <import resource="spring-main-ktm.xml" />
-    <import resource="spring-main-job-file2base.xml" />
+	default-init-method="config">
+	<import resource="spring-main-ktm.xml" />
+	<import resource="spring-main-job-file2base.xml" />
 
-    <bean id="batchKtmFile2Base" class="kkr.ktm.domains.orchestrator.components.batchktm.BatchKtm">
-        <property name="sysPrefix" value="BATCH" />
-        <property name="testLoader" ref="testLoaderExcel" />
-        <property name="testReporter" ref="testReporterExcel" />
-        <property name="testLancer">
-            <bean class="kkr.ktm.domains.orchestrator.components.testlancer.bytype.TestLancerByType">
-                <property name="testLancersByType">
-                    <map>
-                        <entry key="DATA.*">
-                            <bean parent="testLancerJobFile2Base">
-                                <property name="batchJobFile2Base" ref="batchJobFile2BaseData" />
-                            </bean>
-                        </entry>
-                        <entry key="DEPENDENCY.*">
-                            <bean parent="testLancerJobFile2Base">
-                                <property name="batchJobFile2Base" ref="batchJobFile2BaseDependency" />
-                            </bean>
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="trafficLights" ref="trafficLights" />
-    </bean>
+	<bean id="batchKtmFile2Base"
+		class="kkr.ktm.domains.orchestrator.components.batchktm.BatchKtm">
+		<property name="sysPrefix" value="BATCH" />
+		<property name="testLoader" ref="testLoaderExcel" />
+		<property name="testReporter" ref="testReporterExcel" />
+		<property name="testLancer">
+			<bean
+				class="kkr.ktm.domains.orchestrator.components.testlancer.bytype.TestLancerByType">
+				<property name="testLancersByType">
+					<map>
+						<entry key="HELP.*">
+							<bean parent="testLancerJobFile2Base">
+								<property name="batchJobFile2Base" ref="batchJobFile2BaseData" />
+							</bean>
+						</entry>
+						<entry key="DATA.*">
+							<bean parent="testLancerJobFile2Base">
+								<property name="batchJobFile2Base" ref="batchJobFile2BaseData" />
+							</bean>
+						</entry>
+						<entry key="DEPENDENCY.*">
+							<bean parent="testLancerJobFile2Base">
+								<property name="batchJobFile2Base" ref="batchJobFile2BaseDependency" />
+							</bean>
+						</entry>
+					</map>
+				</property>
+			</bean>
+		</property>
+		<property name="trafficLights" ref="trafficLights" />
+	</bean>
 
-    <bean abstract="true" id="testLancerJobFile2Base" class="kkr.job.file2base.domains.test.components.testlancer.job.file2base.TestLancerJobFile2Base">
-        <property name="sysPrefix" value="LANCER" />
-        <property name="dirInput" value="job/input" />
+	<bean abstract="true" id="testLancerJobFile2Base"
+		class="kkr.job.file2base.domains.test.components.testlancer.job.file2base.TestLancerJobFile2Base">
+		<property name="sysPrefix" value="LANCER" />
+		<property name="dirInput" value="job/input" />
 
-        <property name="templateLoader">
-            <bean class="kkr.ktm.domains.common.components.templateloader.file.TemplateLoaderFile">
-                <property name="dirs">
-                    <value>ktm/template</value>
-                </property>
-                <property name="mapping">
-                    <map>
-                        <entry key="DATA_PERF" value="DATA_PERF.tpl" />
-                        <entry key="DATA.*" value="DATA.tpl" />
-                        <entry key="DEPENDENCY.*" value="DEPENDENCY.tpl" />
-                    </map>
-                </property>
-            </bean>
-        </property>
+		<property name="templateLoader">
+			<bean
+				class="kkr.ktm.domains.common.components.templateloader.file.TemplateLoaderFile">
+				<property name="dirs">
+					<value>ktm/template</value>
+				</property>
+				<property name="mapping">
+					<map>
+						<entry key="DATA_PERF" value="DATA_PERF.tpl" />
+						<entry key="DATA.*" value="DATA.tpl" />
+						<entry key="DEPENDENCY.*" value="DEPENDENCY.tpl" />
+					</map>
+				</property>
+			</bean>
+		</property>
 
-        <property name="parametersFormatter">
-            <bean class="kkr.ktm.domains.common.components.parametersformater.template.ParametersFormatterTemplate">
-            </bean>
-        </property>
-
-        <property name="diffManager">
-            <bean class="kkr.ktm.domains.common.components.diffmanager.multi.DiffManagerMulti">
-                <property name="diffManagers">
-                    <list>
-                        <ref bean="diffManagerFs" />
-                        <ref bean="diffManagerDb" />
-                    </list>
-                </property>
-            </bean>
-        </property>
-    </bean>
-
-    <bean abstract="true" id="dirInfo" class="kkr.ktm.domains.common.components.diffmanager.filesystem.data.DirInfo">
-        <property name="content" value="true" />
-    </bean>
+		<property name="parametersFormatter" ref="parametersFormatterTemplate" />
 
 
-    <bean id="diffManagerFs" class="kkr.ktm.domains.common.components.diffmanager.filesystem.local.DiffManagerFilesystemLocal">
-        <property name="code" value="FS" />
-        <property name="dirInfos">
-            <list>
-                <bean parent="dirInfo">
-                    <property name="name" value="INPUT" />
-                    <property name="path" value="job/input" />
-                </bean>
-                <bean parent="dirInfo">
-                    <property name="name" value="OUTPUT" />
-                    <property name="path" value="job/output" />
-                </bean>
-                <bean parent="dirInfo">
-                    <property name="name" value="ERROR" />
-                    <property name="path" value="job/error" />
-                </bean>
-            </list>
-        </property>
-    </bean>
 
-    <bean abstract="true" id="tableInfoTrigger" class="kkr.ktm.domains.common.components.diffmanager.database.trigger.TableInfo">
-        <property name="ktmNamePrefix" value="KTM_" />
-        <property name="joinStatus" value="true" />
-        <property name="columnsPK">
-            <list>
-                <value>ID</value>
-            </list>
-        </property>
-    </bean>
+		<property name="diffManager">
+			<bean
+				class="kkr.ktm.domains.common.components.diffmanager.multi.DiffManagerMulti">
+				<property name="diffManagers">
+					<list>
+						<ref bean="diffManagerFs" />
+						<ref bean="diffManagerDb" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
 
-    <bean id="diffManagerDb" class="kkr.ktm.domains.common.components.diffmanager.database.trigger.DiffManagerDatabaseTrigger">
-        <property name="code" value="DB" />
-        <property name="dateFormat" value="HH:mm:ss dd/MM/yyyy" />
-        <property name="dataSource" ref="dataSource" />
-        <property name="tableInfos">
-            <list>
-                <bean parent="tableInfoTrigger">
-                    <property name="name" value="TABLE_DATA" />
-                </bean>
-                <bean parent="tableInfoTrigger">
-                    <property name="name" value="TABLE_DEPENDENCY" />
-                </bean>
-                <bean parent="tableInfoTrigger">
-                    <property name="name" value="TABLE_ERROR" />
-                </bean>
-                <bean parent="tableInfoTrigger">
-                    <property name="name" value="TABLE_FILE" />
-                </bean>
-            </list>
-        </property>
-    </bean>
+	<bean abstract="true" id="dirInfo"
+		class="kkr.ktm.domains.common.components.diffmanager.filesystem.data.DirInfo">
+		<property name="content" value="true" />
+	</bean>
+
+
+	<bean id="diffManagerFs"
+		class="kkr.ktm.domains.common.components.diffmanager.filesystem.local.DiffManagerFilesystemLocal">
+		<property name="code" value="FS" />
+		<property name="dirInfos">
+			<list>
+				<bean parent="dirInfo">
+					<property name="name" value="INPUT" />
+					<property name="path" value="job/input" />
+				</bean>
+				<bean parent="dirInfo">
+					<property name="name" value="OUTPUT" />
+					<property name="path" value="job/output" />
+				</bean>
+				<bean parent="dirInfo">
+					<property name="name" value="ERROR" />
+					<property name="path" value="job/error" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean abstract="true" id="tableInfoTrigger"
+		class="kkr.ktm.domains.common.components.diffmanager.database.trigger.TableInfo">
+		<property name="ktmNamePrefix" value="KTM_" />
+		<property name="joinStatus" value="true" />
+		<property name="columnsPK">
+			<list>
+				<value>ID</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="diffManagerDb"
+		class="kkr.ktm.domains.common.components.diffmanager.database.trigger.DiffManagerDatabaseTrigger">
+		<property name="code" value="DB" />
+		<property name="dateFormat" value="HH:mm:ss dd/MM/yyyy" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableInfos">
+			<list>
+				<bean parent="tableInfoTrigger">
+					<property name="name" value="TABLE_DATA" />
+				</bean>
+				<bean parent="tableInfoTrigger">
+					<property name="name" value="TABLE_DEPENDENCY" />
+				</bean>
+				<bean parent="tableInfoTrigger">
+					<property name="name" value="TABLE_ERROR" />
+				</bean>
+				<bean parent="tableInfoTrigger">
+					<property name="name" value="TABLE_FILE" />
+				</bean>
+			</list>
+		</property>
+	</bean>
 </beans>
