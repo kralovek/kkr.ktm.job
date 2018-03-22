@@ -38,18 +38,16 @@ public class TestLancerJobFile2Base extends TestLancerJobFile2BaseFwk implements
 			InputsJobFile2Base inputs = new InputsJobFile2Base(sysPrefix);
 			inputs.config(testInput);
 
-			// Collection<DiffEntity> diffEntitiesBefore =
-			// diffManager.loadCurrents(testInput);
+			Collection<DiffEntity> diffEntitiesBefore = diffManager.loadCurrents(testInput);
 
 			createFile(inputs, testInput, retval);
 
-			// runJob(inputs, retval);
+			runJob(inputs, retval);
 
-			// Collection<DiffEntity> diffEntitiesAfter = diffManager.loadDiffs(testInput,
-			// diffEntitiesBefore);
+			Collection<DiffEntity> diffEntitiesAfter = diffManager.loadDiffs(testInput, diffEntitiesBefore);
 
-			// toParametersDiffEntities(retval, diffEntitiesAfter);
-			// toParametersSystem(retval);
+			toParametersDiffEntities(retval, diffEntitiesAfter);
+			toParametersSystem(retval);
 
 			LOG.trace("OK");
 			return retval;
